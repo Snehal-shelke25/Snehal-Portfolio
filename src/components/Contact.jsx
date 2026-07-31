@@ -28,10 +28,11 @@ export default function Contact() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    setStatus("sending");
+  setStatus("sending");
 
+  try {
     const formData = new FormData();
 
     formData.append(
@@ -44,12 +45,20 @@ export default function Contact() {
     formData.append("subject", form.subject);
     formData.append("message", form.message);
 
+    // Reply to sender
+    formData.append("replyto", form.email);
+
     const response = await fetch("https://api.web3forms.com/submit", {
       method: "POST",
       body: formData,
+      headers: {
+        Accept: "application/json",
+      },
     });
 
     const result = await response.json();
+
+    console.log(result);
 
     if (result.success) {
       setStatus("success");
@@ -65,11 +74,20 @@ export default function Contact() {
         setStatus("idle");
       }, 4000);
     } else {
-      alert("Something went wrong. Please try again.");
+      console.error(result);
+
+      alert(result.message || "Failed to send message.");
+
       setStatus("idle");
     }
-  };
+  } catch (error) {
+    console.error(error);
 
+    alert("Something went wrong. Please try again.");
+
+    setStatus("idle");
+  }
+};
   return (
     <section id="contact">
       <div className="container">
